@@ -125,6 +125,20 @@ In your view spec:
         end
     end
 
+Your model:
+
+    class User < ActiveRecord::Base
+      belong_to :group
+      has_one  :avatar, :dependent => :destroy
+      has_many :posts
+      has_many :comments, :through => :posts
+
+      validates_presence_of :email, :login, :name
+      validates_uniqueness_of :email, :login
+      validates_length_of :password, :between => 4..40
+      validates_confirmation_of :password
+    end
+
 In your model spec:
 
     describe User do
@@ -132,12 +146,20 @@ In your model spec:
         @user = User.new
       end
 
+      it "should belong to a group" do
+        @user.should belong_to(:group)
+      end
+
+      it "should have one avatar" do
+        @user.should have_one(:avatar, :dependent => :destroy)
+      end
+
       it "should have many posts" do
         @user.should have_many(:posts)
       end
 
-      it "should belong to a group" do
-        @user.should belong_to(:group)
+      it "should have many comments" do
+        @user.should have_many(:comments, :through => :posts)
       end
 
       it do
